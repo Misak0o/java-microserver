@@ -1,4 +1,4 @@
 package utils;
 
-public record RequestParser(String method, String header, String body) {
+public record RequestParser(String method, String path, String header, String body) {
 }

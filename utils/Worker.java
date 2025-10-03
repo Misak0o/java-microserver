@@ -2,7 +2,9 @@ package utils;
 
 import java.io.*;
 import java.net.Socket;
-import java.util.Objects;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.concurrent.Callable;
 
 public class Worker implements Callable<Boolean> {
@@ -20,19 +22,24 @@ public class Worker implements Callable<Boolean> {
         String request = new String(bytes);
         RequestParser rp = getContent(request);
         OutputStream os = socket.getOutputStream();
-        String response = switch (rp.method()) {
-            case "GET" -> """
-                    <html>
-                    <body>
-                    
-                    <h1>My First Heading</h1>
-                    <p>My first paragraph.</p>
-                    
-                    </body>
-                    </html>""";
-            case "POST" -> "You sent" + rp.body();
-            default -> "Invalid method ! ;D";
-        };
+        
+        String responseBody = "";
+        try {
+            responseBody = switch (rp.method()) {
+                case "GET" -> new String(Files.readAllBytes(Paths.get("."+rp.path())),
+                                         StandardCharsets.UTF_8);
+                case "POST" -> "You sent" + rp.body();
+                default -> "Invalid method ! ;D";
+            };
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw e;
+        }
+        
+        String response = "HTTP/1.1 200 OK\n"
+            +"Content-Length: "+responseBody.length()+"\n"
+            +"Content-Type: text/html\n\n"
+            +responseBody;
         os.write(response.getBytes());
         return true;
     }
@@ -44,22 +51,26 @@ public class Worker implements Callable<Boolean> {
         String line = buffer.readLine();
         StringBuilder currentHeaders = new StringBuilder();
         StringBuilder currentBody = new StringBuilder();
-        String method = line.split(" ", 2)[0];
+        
+        String[] splitedLine = line.split(" ");
+        String method = splitedLine[0];
+        String path = splitedLine[1];
+        
         System.out.println("Je commence à lire le contenu de la requête");
-        while (!Objects.equals(line, "\n") && !Objects.equals(line, null)) {
+        while (line != null && !line.equals("\n")) {
             currentHeaders.append(line);
             line = buffer.readLine();
         }
-        line = buffer.readLine();
+        if (line != null) line = buffer.readLine();
         System.out.println("J'ai finis les headers, je commence à lire le body");
-        while (!Objects.equals(line, "\n") && !Objects.equals(line, null)) {
+        while (line != null) {
             currentBody.append(line);
             line = buffer.readLine();
         }
         System.out.println("J'ai finis de lire la requête");
         String header = currentHeaders.toString();
         String body  = currentBody.toString();
-        return new RequestParser(method, header, body);
+        return new RequestParser(method, path, header, body);
     }
 
 
