@@ -5,7 +5,7 @@ import java.net.Socket;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 
-public class Worker implements Callable<Integer> {
+public class Worker implements Callable<Boolean> {
     private final Socket socket;
 
     public Worker(Socket socket) {
@@ -13,7 +13,7 @@ public class Worker implements Callable<Integer> {
     }
 
     @Override
-    public Integer call() throws Exception {
+    public Boolean call() throws Exception {
         InputStream is = this.socket.getInputStream();
         byte[] bytes = new byte[is.available()];
         int byteRead = is.read(bytes);
@@ -34,7 +34,7 @@ public class Worker implements Callable<Integer> {
             default -> "Invalid method ! ;D";
         };
         os.write(response.getBytes());
-        return 0;
+        return true;
     }
 
 

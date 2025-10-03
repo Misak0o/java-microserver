@@ -2,10 +2,8 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Queue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.*;
+
 import utils.*;
 
 
@@ -16,17 +14,29 @@ public class MicroServerSocket {
         try(ServerSocket serverSocket = new ServerSocket(2134)) {
             System.out.println("Attend une nouvelle connexion au port 2134 ...");
             ExecutorService pool = Executors.newFixedThreadPool(5);
-            Queue<Future<Integer>> resultList = new LinkedBlockingQueue<>();
-
-            while (true) {
+            Queue<Future<Boolean>> resultList = new LinkedBlockingQueue<>();
+            boolean running = true;
+            int nb_clients = 0;
+            while (running) {
                 Socket socket = serverSocket.accept();
-                Future<Integer> result = pool.submit(new Worker(socket));
+                nb_clients++;
+                Future<Boolean> result = pool.submit(new Worker(socket));
                 resultList.add(result);
-                if (resultList.poll() != null) {
+                if (nb_clients >= 10) {
+                    System.out.println("Le serveur est fatigué, il va se reposer ...");
                     break;
                 }
             }
+            Future<Boolean> result;
+            int nb_resultats = 0;
+            while ((result = resultList.poll()) != null) {
+                System.out.println(++nb_resultats + " résultat : " + result.get());
+            }
             pool.shutdown();
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
     }
 
