@@ -17,12 +17,16 @@ public class MicroServerSocket {
             System.out.println("Attend une nouvelle connexion au port 2134 ...");
             ExecutorService pool = Executors.newFixedThreadPool(5);
             Queue<Future<Integer>> resultList = new LinkedBlockingQueue<>();
+
             while (true) {
                 Socket socket = serverSocket.accept();
-
+                Future<Integer> result = pool.submit(new Worker(socket));
+                resultList.add(result);
+                if (resultList.poll() != null) {
+                    break;
+                }
             }
-
-
+            pool.shutdown();
         }
     }
 

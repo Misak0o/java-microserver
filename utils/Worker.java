@@ -8,7 +8,7 @@ import java.util.concurrent.Callable;
 public class Worker implements Callable<Integer> {
     private final Socket socket;
 
-    Worker(Socket socket) {
+    public Worker(Socket socket) {
         this.socket = socket;
     }
 
