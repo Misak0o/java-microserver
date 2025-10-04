@@ -50,6 +50,7 @@ public class Worker implements Callable<Boolean> {
                     +"Content-Type: text/html\n\n"
                     + responseBody404;
             os.write(response.getBytes());
+            socket.close();
             return true;
         }
         
@@ -58,6 +59,7 @@ public class Worker implements Callable<Boolean> {
             +"Content-Type: text/html\n\n"
             +responseBody;
         os.write(response.getBytes());
+        socket.close();
         return true;
     }
 
