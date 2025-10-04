@@ -45,8 +45,25 @@ public class Worker implements Callable<Boolean> {
                 default -> "Invalid method ! ;D";
             };
         } catch (IOException e) {
-            e.printStackTrace();
-            throw e;
+            String responseBody404 =
+                    "<!doctype html>\n" +
+                    "<html>\n" +
+                    "   <head>\n" +
+                    "       <title>404 Not Found</title>\n" +
+                    "       <meta charset=\"utf-8\">\n" +
+                    "   </head>\n" +
+                    "   <body>\n" +
+                    "       <h1>404 Not Found</h1>\n" +
+                    "            <p>The requested resource was not found on this server.</p>\n" +
+                    "   </body>\n" +
+                    "</html>\n";
+            String response = "HTTP/1.1 404 NOT FOUND\n"
+                    +"Content-Length: "+responseBody404.length()+"\n"
+                    +"Content-Type: text/html\n\n"
+                    + responseBody404;
+            os.write(response.getBytes());
+            socket.close();
+            return true;
         }
         
         String response = "HTTP/1.1 200 OK\n"
@@ -54,6 +71,7 @@ public class Worker implements Callable<Boolean> {
             +"Content-Type: text/html\n\n"
             +responseBody;
         os.write(response.getBytes());
+        socket.close();
         return true;
     }
 

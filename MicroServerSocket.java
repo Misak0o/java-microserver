@@ -24,7 +24,7 @@ public class MicroServerSocket {
                 resultList.add(result);
                 if (nbClients >= 10) {
                     System.out.println("Le serveur est fatigué, il va se reposer ...");
-                    break;
+                    running = false;
                 }
             }
             Future<Boolean> result;
