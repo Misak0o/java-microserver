@@ -13,13 +13,25 @@ public class Worker implements Callable<Boolean> {
     public Worker(Socket socket) {
         this.socket = socket;
     }
+    
+    public String readRequest() throws IOException {
+        byte[] bytes = new byte[this.socket.getInputStream().available()];
+        String request = "";
+        InputStream is = this.socket.getInputStream();
+        
+        while (true) {
+            int justRead = is.read(bytes);
+            request += new String(bytes, 0, justRead, StandardCharsets.UTF_8);
+            if (request.substring(request.length()-4).matches("\r\n\r\n"))
+                break;
+        }
+        
+        return request;
+    }
 
     @Override
     public Boolean call() throws Exception {
-        InputStream is = this.socket.getInputStream();
-        byte[] bytes = new byte[is.available()];
-        int byteRead = is.read(bytes);
-        String request = new String(bytes);
+        String request = readRequest();
         RequestParser rp = getContent(request);
         OutputStream os = socket.getOutputStream();
         
