@@ -24,6 +24,7 @@ public class Worker implements Callable<Boolean> {
         OutputStream os = socket.getOutputStream();
         
         String responseBody = "";
+        Thread.sleep(10*1000);
         try {
             responseBody = switch (rp.method()) {
                 case "GET" -> new String(Files.readAllBytes(Paths.get("."+rp.path())),
@@ -55,19 +56,16 @@ public class Worker implements Callable<Boolean> {
         String[] splitedLine = line.split(" ");
         String method = splitedLine[0];
         String path = splitedLine[1];
-        
-        System.out.println("Je commence à lire le contenu de la requête");
+
         while (line != null && !line.equals("\n")) {
             currentHeaders.append(line);
             line = buffer.readLine();
         }
         if (line != null) line = buffer.readLine();
-        System.out.println("J'ai finis les headers, je commence à lire le body");
         while (line != null) {
             currentBody.append(line);
             line = buffer.readLine();
         }
-        System.out.println("J'ai finis de lire la requête");
         String header = currentHeaders.toString();
         String body  = currentBody.toString();
         return new RequestParser(method, path, header, body);
