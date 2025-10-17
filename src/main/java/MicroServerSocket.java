@@ -6,12 +6,10 @@ import java.util.concurrent.*;
 
 import utils.*;
 
-
 public class MicroServerSocket {
 
-
     public void start() throws IOException {
-        try(ServerSocket serverSocket = new ServerSocket(2134)) {
+        try (ServerSocket serverSocket = new ServerSocket(2134)) {
             ExecutorService pool = Executors.newFixedThreadPool(5);
             Queue<Future<Boolean>> resultList = new LinkedBlockingQueue<>();
             boolean running = true;
@@ -40,10 +38,5 @@ public class MicroServerSocket {
             throw new RuntimeException(e);
         }
     }
-    
-    public static void main(String[] args) throws IOException {
-        MicroServerSocket myMSS = new MicroServerSocket();
-        myMSS.start();
-    }
-    
+
 }
