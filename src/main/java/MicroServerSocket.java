@@ -23,6 +23,7 @@ public class MicroServerSocket {
                 Future<Boolean> result = pool.submit(new Worker(socket));
                 resultList.add(result);
                 if (nbClients >= 10) {
+
                     System.out.println("Le serveur est fatigué, il va se reposer ...");
                     running = false;
                 }
