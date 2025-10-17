@@ -4,9 +4,7 @@ import java.net.Socket;
 import java.util.Queue;
 import java.util.concurrent.*;
 
-import utils.*;
-
-public class MicroServerSocket {
+public class ClientServer {
 
     public void start() throws IOException {
         try (ServerSocket serverSocket = new ServerSocket(2134)) {
@@ -18,7 +16,7 @@ public class MicroServerSocket {
                 System.out.println("Attend une nouvelle connexion au port 2134 ...");
                 Socket socket = serverSocket.accept();
                 nbClients++;
-                Future<Boolean> result = pool.submit(new Worker(socket));
+                Future<Boolean> result = pool.submit(new SocketClient(socket));
                 resultList.add(result);
                 if (nbClients >= 10) {
 

@@ -7,25 +7,25 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.concurrent.Callable;
 
-public class Worker implements Callable<Boolean> {
+public class SocketClient implements Callable<Boolean> {
     private final Socket socket;
 
-    public Worker(Socket socket) {
+    public SocketClient(Socket socket) {
         this.socket = socket;
     }
-    
+
     public String readRequest() throws IOException {
         byte[] bytes = new byte[this.socket.getInputStream().available()];
         String request = "";
         InputStream is = this.socket.getInputStream();
-        
+
         while (true) {
             int justRead = is.read(bytes);
             request += new String(bytes, 0, justRead, StandardCharsets.UTF_8);
-            if (request.substring(request.length()-4).matches("\r\n\r\n"))
+            if (request.substring(request.length() - 4).matches("\r\n\r\n"))
                 break;
         }
-        
+
         return request;
     }
 
@@ -34,19 +34,18 @@ public class Worker implements Callable<Boolean> {
         String request = readRequest();
         RequestParser rp = getContent(request);
         OutputStream os = socket.getOutputStream();
-        
+
         String responseBody = "";
-        Thread.sleep(10*1000);
+        Thread.sleep(10 * 1000);
         try {
             responseBody = switch (rp.method()) {
-                case "GET" -> new String(Files.readAllBytes(Paths.get("."+rp.path())),
-                                         StandardCharsets.UTF_8);
+                case "GET" -> new String(Files.readAllBytes(Paths.get("." + rp.path())),
+                        StandardCharsets.UTF_8);
                 case "POST" -> "You sent" + rp.body();
                 default -> "Invalid method ! ;D";
             };
         } catch (IOException e) {
-            String responseBody404 =
-                    "<!doctype html>\n" +
+            String responseBody404 = "<!doctype html>\n" +
                     "<html>\n" +
                     "   <head>\n" +
                     "       <title>404 Not Found</title>\n" +
@@ -58,23 +57,22 @@ public class Worker implements Callable<Boolean> {
                     "   </body>\n" +
                     "</html>\n";
             String response = "HTTP/1.1 404 NOT FOUND\n"
-                    +"Content-Length: "+responseBody404.length()+"\n"
-                    +"Content-Type: text/html\n\n"
+                    + "Content-Length: " + responseBody404.length() + "\n"
+                    + "Content-Type: text/html\n\n"
                     + responseBody404;
             os.write(response.getBytes());
             socket.close();
             return true;
         }
-        
+
         String response = "HTTP/1.1 200 OK\n"
-            +"Content-Length: "+responseBody.length()+"\n"
-            +"Content-Type: text/html\n\n"
-            +responseBody;
+                + "Content-Length: " + responseBody.length() + "\n"
+                + "Content-Type: text/html\n\n"
+                + responseBody;
         os.write(response.getBytes());
         socket.close();
         return true;
     }
-
 
     private RequestParser getContent(String request) throws IOException {
         Reader reader = new StringReader(request);
@@ -82,7 +80,7 @@ public class Worker implements Callable<Boolean> {
         String line = buffer.readLine();
         StringBuilder currentHeaders = new StringBuilder();
         StringBuilder currentBody = new StringBuilder();
-        
+
         String[] splitedLine = line.split(" ");
         String method = splitedLine[0];
         String path = splitedLine[1];
@@ -91,15 +89,15 @@ public class Worker implements Callable<Boolean> {
             currentHeaders.append(line);
             line = buffer.readLine();
         }
-        if (line != null) line = buffer.readLine();
+        if (line != null)
+            line = buffer.readLine();
         while (line != null) {
             currentBody.append(line);
             line = buffer.readLine();
         }
         String header = currentHeaders.toString();
-        String body  = currentBody.toString();
+        String body = currentBody.toString();
         return new RequestParser(method, path, header, body);
     }
-
 
 }
