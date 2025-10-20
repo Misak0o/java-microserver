@@ -3,10 +3,18 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Queue;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
-public class ClientServer {
+public class ClientServer implements Runnable {
 
-    public void start() throws IOException {
+    AtomicInteger counter;
+
+    public ClientServer(AtomicInteger counter) {
+        this.counter = counter;
+    }
+
+    @Override
+    public void run()/* throws IOException*/ {
         try (ServerSocket serverSocket = new ServerSocket(2134)) {
             ExecutorService pool = Executors.newFixedThreadPool(5);
             Queue<Future<Boolean>> resultList = new LinkedBlockingQueue<>();
@@ -16,7 +24,7 @@ public class ClientServer {
                 System.out.println("Attend une nouvelle connexion au port 2134 ...");
                 Socket socket = serverSocket.accept();
                 nbClients++;
-                Future<Boolean> result = pool.submit(new SocketClient(socket));
+                Future<Boolean> result = pool.submit(new SocketClient(socket, counter));
                 resultList.add(result);
                 if (nbClients >= 10) {
 
@@ -30,6 +38,8 @@ public class ClientServer {
                 System.out.println(++nbResultats + " résultat : " + result.get());
             }
             pool.shutdown();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         } catch (ExecutionException e) {
             throw new RuntimeException(e);
         } catch (InterruptedException e) {
