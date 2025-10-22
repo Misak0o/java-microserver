@@ -4,9 +4,9 @@ import java.net.Socket;
 import java.util.Queue;
 import java.util.concurrent.*;
 
-public class ClientServer {
+public class ClientServer extends Runnable {
 
-    public void start() throws IOException {
+    public void run() throws IOException {
         try (ServerSocket serverSocket = new ServerSocket(2134)) {
             ExecutorService pool = Executors.newFixedThreadPool(5);
             Queue<Future<Boolean>> resultList = new LinkedBlockingQueue<>();
