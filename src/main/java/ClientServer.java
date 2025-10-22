@@ -10,7 +10,7 @@ public class ClientServer implements Runnable {
     private AtomicInteger counter;
     private ExecutorService pool;
     private Queue<Future<Boolean>> resultList;
-    private Boolean running;
+    private volatile Boolean running;
 
     public ClientServer(AtomicInteger counter) {
         this.counter = counter;
