@@ -33,6 +33,7 @@ public class ClientServer implements Runnable {
             while ((result = this.resultList.poll()) != null) {
                 System.out.println(++nbResultats + " résultat : " + result.get());
             }
+            this.pool.shutdown();
             serverSocket.close();
         } catch (IOException e) {
             throw new RuntimeException(e);

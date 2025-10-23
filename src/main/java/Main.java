@@ -11,5 +11,12 @@ public class Main {
         AdminServer myAS = new AdminServer(myCS);
         Thread adminThread = new Thread(myAS);
         adminThread.start();
+
+        try {
+            clientThread.join();
+            adminThread.join();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
